@@ -4,14 +4,13 @@
 #include <utility>
 class GeometryFigure {
 public:
-  int id;
   virtual double getSquare() const = 0;
+  virtual ~GeometryFigure() {}
 };
 
 class Rectangle : public GeometryFigure {
 public:
-  Rectangle(double w, double h, int i) {
-    id = i;
+  Rectangle(double w, double h) {
     if (w >= 0 && h >= 0) {
       width = w;
       height = h;
@@ -20,6 +19,8 @@ public:
       width = 0;
     }
   }
+
+  ~Rectangle() {}
   double getSquare() const override { return width * height; }
 
 private:
@@ -29,24 +30,23 @@ private:
 
 class Circle : public GeometryFigure {
 public:
-  Circle(double r, int i) {
-    id = i;
-    if (radius >= 0)
+  Circle(double r) {
+    if (r >= 0)
       radius = r;
     else
       radius = 0;
   }
+  ~Circle() {}
   double getSquare() const override { return radius * radius * PI; }
 
 private:
   double radius;
-  const double PI = 3.14;
+  static constexpr double PI = 3.14;
 };
 
 class Triangle : public GeometryFigure {
 public:
-  Triangle(double a_1, double a_2, double a_3, int i) {
-    id = i;
+  Triangle(double a_1, double a_2, double a_3) {
     if (a_1 >= 0 && a_2 >= 0 && a_3 >= 0) {
       angle_3 = a_3;
       angle_2 = a_2;
@@ -57,14 +57,14 @@ public:
       angle_3 = 0;
     }
   }
+  ~Triangle() {}
   double getSemiPerimeter() const { return (angle_3 + angle_2 + angle_1) / 2; }
 
   double getSquare() const override {
     double P = getSemiPerimeter();
     if (angle_1 == 0 || angle_2 == 0 || angle_3 == 0)
       return 0;
-    return std::sqrt(P * std::sqrt(P - angle_1) * std::sqrt(P - angle_2) *
-                     std::sqrt(P - angle_3));
+    return std::sqrt(P * (P - angle_1) * (P - angle_2) * (P - angle_3));
   };
 
 private:
@@ -91,11 +91,11 @@ void bubbleSort(GeometryFigure **arr, int count) {
 
 TEST(TestClass, Sorting_1) {
   GeometryFigure *arr[5];
-  arr[0] = new Rectangle(10.8, 2, 0);
-  arr[1] = new Rectangle(30, 50, 1);
-  arr[2] = new Rectangle(2, 5, 2);
-  arr[3] = new Rectangle(9, 10, 3);
-  arr[4] = new Rectangle(2, 8, 4);
+  arr[0] = new Rectangle(10.8, 2);
+  arr[1] = new Rectangle(30, 50);
+  arr[2] = new Rectangle(2, 5);
+  arr[3] = new Rectangle(9, 10);
+  arr[4] = new Rectangle(2, 8);
   bubbleSort(arr, 5);
   ASSERT_EQ(arr[0]->getSquare(), 1500);
   ASSERT_EQ(arr[1]->getSquare(), 90);
@@ -106,53 +106,75 @@ TEST(TestClass, Sorting_1) {
 
 TEST(TestClass, Sorting_2) {
   GeometryFigure *arr[5];
-  arr[0] = new Triangle(10, 12.2, 3, 0);
-  arr[1] = new Rectangle(5.5, 2, 1);
-  arr[2] = new Circle(8.2, 2);
-  arr[3] = new Triangle(0, 0, 0, 3);
-  arr[4] = new Rectangle(0, 0, 4);
-
+  arr[0] = new Triangle(10, 12.2, 3);
+  double semiPer_1 = (10 + 12.2 + 3) / 2;
+  arr[1] = new Rectangle(5.5, 2);
+  arr[2] = new Circle(8.2);
+  arr[3] = new Triangle(0, 0, 0);
+  arr[4] = new Rectangle(0, 0);
+  const double PI = 3.14;
   bubbleSort(arr, 5);
 
-  ASSERT_EQ(arr[0]->id, 2);
-  ASSERT_EQ(arr[1]->id, 1);
-  ASSERT_EQ(arr[2]->id, 0);
-  ASSERT_EQ(arr[3]->id, 3);
-  ASSERT_EQ(arr[4]->id, 4);
+  ASSERT_EQ(arr[0]->getSquare(), 8.2 * 8.2 * PI);
+  ASSERT_EQ(arr[1]->getSquare(),
+            std::sqrt(semiPer_1 * (semiPer_1 - 10) * (semiPer_1 - 12.2) *
+                      (semiPer_1 - 3)));
+  ASSERT_EQ(arr[2]->getSquare(), 5.5 * 2);
+  ASSERT_EQ(arr[3]->getSquare(), 0);
+  ASSERT_EQ(arr[4]->getSquare(), 0);
+  for (int i = 0; i < 5; i++)
+    delete arr[i];
 }
 
 TEST(TestClass, Sorting_3) {
   GeometryFigure *arr[10];
-  arr[0] = new Triangle(10, 12.2, 3, 0);
-  arr[1] = new Rectangle(5.5, 2, 1);
-  arr[2] = new Circle(8.2, 2);
-  arr[3] = new Triangle(0, 0, 0, 3);
-  arr[4] = new Rectangle(0, 0, 4);
-  arr[5] = new Rectangle(10.8, 2, 5);
-  arr[6] = new Rectangle(30, 50, 6);
-  arr[7] = new Rectangle(2, 5, 7);
-  arr[8] = new Rectangle(9, 10, 8);
-  arr[9] = new Rectangle(2, 8, 9);
-
+  arr[0] = new Triangle(10, 12.2, 3);
+  double semiPer_1 = (10 + 12.2 + 3) / 2;
+  arr[1] = new Rectangle(5.5, 2);
+  arr[2] = new Circle(8.2);
+  arr[3] = new Triangle(0, 0, 0);
+  arr[4] = new Rectangle(0, 0);
+  arr[5] = new Rectangle(10.8, 2);
+  arr[6] = new Rectangle(30, 50);
+  arr[7] = new Rectangle(2, 5);
+  arr[8] = new Rectangle(9, 10);
+  arr[9] = new Rectangle(2, 8);
+  const double PI = 3.14;
   std::cout << "Изначальный массив: \n";
   for (int i = 0; i < 10; i++)
-    std::cout << "square: " << arr[i]->getSquare() << " id: " << arr[i]->id
-              << '\n';
+    std::cout << "square: " << arr[i]->getSquare() << '\n';
   bubbleSort(arr, 10);
   std::cout << "Отсортированный массив \n";
   for (int i = 0; i < 10; i++)
-    std::cout << "square: " << arr[i]->getSquare() << " id: " << arr[i]->id
-              << '\n';
-  ASSERT_EQ(arr[0]->id, 6);
-  ASSERT_EQ(arr[1]->id, 2);
-  ASSERT_EQ(arr[2]->id, 8);
-  ASSERT_EQ(arr[3]->id, 5);
-  ASSERT_EQ(arr[4]->id, 9);
-  ASSERT_EQ(arr[5]->id, 1);
-  ASSERT_EQ(arr[6]->id, 7);
-  ASSERT_EQ(arr[7]->id, 0);
-  ASSERT_EQ(arr[8]->id, 3);
-  ASSERT_EQ(arr[9]->id, 4);
+    std::cout << "square: " << arr[i]->getSquare() << '\n';
+  ASSERT_EQ(arr[0]->getSquare(), 30 * 50);
+  ASSERT_EQ(arr[1]->getSquare(), 8.2 * 8.2 * PI);
+  ASSERT_EQ(arr[2]->getSquare(), 9 * 10);
+  ASSERT_EQ(arr[3]->getSquare(), 10.8 * 2);
+  ASSERT_EQ(arr[4]->getSquare(), 2 * 8);
+  ASSERT_EQ(arr[5]->getSquare(),
+            std::sqrt(semiPer_1 * (semiPer_1 - 10) * (semiPer_1 - 12.2) *
+                      (semiPer_1 - 3)));
+  ASSERT_EQ(arr[6]->getSquare(), 5.5 * 2.0);
+  ASSERT_EQ(arr[7]->getSquare(), 2 * 5);
+  ASSERT_EQ(arr[8]->getSquare(), 0);
+  ASSERT_EQ(arr[9]->getSquare(), 0);
+
+  for (int i = 0; i < 10; i++)
+    delete arr[i];
+}
+
+TEST(TestClass, Sorting_4) {
+  GeometryFigure *arr[1];
+  arr[0] = new Rectangle(1, 5);
+  bubbleSort(arr, 1);
+  ASSERT_EQ(arr[0]->getSquare(), 5);
+  delete arr[0];
+}
+
+TEST(TestClass, Sorting_5) {
+  GeometryFigure *arr[0];
+  bubbleSort(arr, 0);
 }
 
 int main(int argc, char **argv) {
